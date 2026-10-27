@@ -96,30 +96,32 @@ void simulation::init_uniform(const UniformConfig& conf, size_t seed) noexcept {
     std::default_random_engine gen(seed);
     std::uniform_real_distribution<float> angle(0.0f, 1.0f);
 
-    const float irad = 25.0f;
-    const float orad = sqrtf((float)data_.bodies()) * 5.0f;
+    const float irad = conf.inner_radius;
+    const float orad = conf.outer_radius;
 
     // centeral body
     data_.posx()[0] = 0.0f;
     data_.posy()[0] = 0.0f;
     data_.velx()[0] = 0.0f;
     data_.vely()[0] = 0.0f;
-    data_.mass()[0] = 1e6f;
+    data_.mass()[0] = 1e5f;
 
     for (size_t i = 1; i < data_.bodies(); i++) {
         float a = angle(gen) * TAU;
-        float sina = sinf(a);
-        float cosa = cosf(a);
 
         float t = irad / orad;
         float r = angle(gen) * (1.0f - t*t) + t*t;
         float scale = orad * sqrtf(r);
 
+        float sina = sinf(a);
+        float cosa = cosf(a);
+
+        const float vel = sqrtf(data_.mass()[0] / scale);
         data_.posx()[i] = cosa*scale;
         data_.posy()[i] = sina*scale;
-        data_.velx()[i] = sina;
-        data_.vely()[i] = -cosa;
-        data_.mass()[i] = 1.0f;
+        data_.velx()[i] = sina * vel;
+        data_.vely()[i] = -cosa * vel;
+        data_.mass()[i] = 0.1f;
     }
 
     // sort based on distance

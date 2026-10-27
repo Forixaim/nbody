@@ -21,6 +21,10 @@
 #define ELLIPSES "ellipses"
 #define SEGMENTS "segments"
 
+// uniform config data
+#define INNERRADIUS "innerradius"
+#define OUTERRADIUS "outerradius"
+
 // video config data
 #define ZSCALE "zscale"
 
@@ -71,7 +75,9 @@ UniformConfig Config::Uniform() const noexcept {
     return {
         .pos_mean = conf[POSMEAN].as<float>(0.0f),
         .pos_std  = conf[POSSTD ].as<float>(1.0f),
-        .z_scale  = conf[ZSCALE ].as<float>(10.0f)
+        .z_scale  = conf[ZSCALE ].as<float>(10.0f),
+        .inner_radius = conf[INNERRADIUS].as<float>(25.0f),
+        .outer_radius = conf[OUTERRADIUS].as<float>(sqrtf(Points()) * 5.0f)
     };
 }
 

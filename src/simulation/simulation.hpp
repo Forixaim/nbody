@@ -1,10 +1,9 @@
 #pragma once
 #include <malloc.h>
 #include <immintrin.h>
-#include <omp.h>
+#include <stdexcept>
 #include <chrono>
 
-#include "../quadtree/quadtree.hpp"
 #include "../data/data.hpp"
 #include "../cli/cli.hpp"
 
@@ -18,7 +17,7 @@ struct simulation {
         update(nullptr) {}
 
     // move constructor
-    simulation(simulation&& other) noexcept : 
+    simulation(simulation&& other) noexcept :
         data_(std::move(other.data_)),
         update(other.update) {}
 
@@ -32,12 +31,16 @@ struct simulation {
         data_(f.config.Points(), f.cpu) {
             if (f.config.Type() == "cluster") {
                 init_cluster(f.config.Cluster(), f.config.Seed());
+
             } else if (f.config.Type() == "spiral") {
                 init_spiral(f.config.Spiral(), f.config.Seed());
+
             } else if (f.config.Type() == "uniform") {
                 init_uniform(f.config.Uniform(), f.config.Seed());
+
             } else if (f.config.Type() == "voronoi") {
                 init_voronoi(f.config.Voronoi(), f.config.Seed());
+
             } else {
                 throw std::runtime_error("invalid initilization");
             }
@@ -46,6 +49,7 @@ struct simulation {
                 update = &simulation::update_cpu;
             } else {
                 update = &simulation::update_gpu;
+                throw std::runtime_error("not implemented");
                 // TODO : Copy initial values into gpu buffers
             }
         }
@@ -68,9 +72,9 @@ struct simulation {
         data_ = other.data_;
         return *this;
     }
-    
+
     std::chrono::nanoseconds (simulation::*update)(const float) noexcept;
-    
+
     data& get_data() { return data_; }
     const float* posx() const noexcept { return data_.posx(); }
     const float* posy() const noexcept { return data_.posy(); }
@@ -78,9 +82,7 @@ struct simulation {
     size_t bodies() const noexcept { return data_.bodies(); }
 
     private:
-    zcurve zcurve_;
     data data_;
-
 
     std::chrono::nanoseconds update_cpu_bh(const float ft) noexcept;
 

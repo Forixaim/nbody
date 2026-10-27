@@ -2,9 +2,10 @@
 #include <cstdlib>
 #include <string.h>
 #include <cstddef>
-#include <omp.h>
+#include <cstdint>
 #include <vector>
 #include <algorithm>
+#include <omp.h>
 
 #include "../definitions/macros.hpp"
 #include "../matrix/matrix.hpp"
@@ -25,8 +26,8 @@ struct data {
     public:
 
     // default constructor
-    data() : 
-        bodies_(0), 
+    data() :
+        bodies_(0),
         posx_(nullptr),
         posy_(nullptr),
         velx_(nullptr),
@@ -92,7 +93,7 @@ struct data {
         vely_ = other.vely_;
         mass_ = other.mass_;
         accx_ = other.accx_;
-        accy_ = other.accy_; 
+        accy_ = other.accy_;
 
         other.bodies_ = 0;
         other.posx_ = nullptr;
@@ -114,7 +115,7 @@ struct data {
         velx_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(bodies_*sizeof(float)));
         vely_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(bodies_*sizeof(float)));
         mass_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(bodies_*sizeof(float)));
-            
+
         memcpy(posx_, other.posx_, bodies_*sizeof(float));
         memcpy(posy_, other.posy_, bodies_*sizeof(float));
         memcpy(velx_, other.velx_, bodies_*sizeof(float));
@@ -139,7 +140,7 @@ struct data {
     const inline float* __restrict velx() const noexcept { return velx_; }
     const inline float* __restrict vely() const noexcept { return vely_; }
     const inline float* __restrict mass() const noexcept { return mass_; }
-    
+
     inline float* __restrict posx() noexcept { return posx_; }
     inline float* __restrict posy() noexcept { return posy_; }
     inline float* __restrict velx() noexcept { return velx_; }
@@ -182,8 +183,11 @@ struct data {
     inline void zcurve() noexcept {
         std::vector<std::pair<uint64_t, size_t>> values(bodies_);
 
-        auto [minx, maxx] = std::minmax_element(posx_, posx_+bodies_);
-        auto [miny, maxy] = std::minmax_element(posy_, posy_+bodies_);
+        float *minx, *maxx;
+        float *miny, *maxy;
+
+        std::tie(minx, maxx) = std::minmax_element(posx_, posx_+bodies_);
+        std::tie(miny, maxy) = std::minmax_element(posy_, posy_+bodies_);
 
         float rx = (*maxx > *minx) ? (*maxx - *minx) : 1.0f;
         float ry = (*maxy > *miny) ? (*maxy - *miny) : 1.0f;

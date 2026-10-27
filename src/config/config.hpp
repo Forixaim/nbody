@@ -1,4 +1,7 @@
 #pragma once
+#include <cstddef>
+#include <string>
+
 #include <yaml-cpp/yaml.h>
 
 struct SpiralConfig {
@@ -25,6 +28,9 @@ struct UniformConfig {
     float pos_mean;
     float pos_std;
     float z_scale;
+
+    float inner_radius;
+    float outer_radius;
 };
 
 struct VoronoiConfig {
