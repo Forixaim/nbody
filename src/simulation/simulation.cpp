@@ -1,4 +1,4 @@
-/* 
+/*
 Author: Joey Soroka
 Updated: 2/23/26
 Purpose: Implements basic member functions for the simulation class
@@ -30,7 +30,7 @@ void simulation::init_cluster(const ClusterConfig& conf, size_t seed) noexcept {
     }
 }
 
-void simulation::init_spiral(const SpiralConfig& conf, size_t seed) noexcept { 
+void simulation::init_spiral(const SpiralConfig& conf, size_t seed) noexcept {
     std::default_random_engine gen(seed);
 
     std::normal_distribution<float> pos(conf.pos_mean, conf.pos_std);
@@ -165,7 +165,7 @@ void simulation::init_voronoi(const VoronoiConfig& conf, size_t seed) noexcept {
     for (size_t c = 1; c < clusters; c++) {
         float r = cluster_rad(urng) * rad;
         float angle = cluster_angle(urng) * TAU;
-        
+
         seedx[c] = r * cosf(angle);
         seedy[c] = r * sinf(angle);
         seedw[c] = cluster_weight(urng);
