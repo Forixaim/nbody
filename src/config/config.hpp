@@ -40,18 +40,18 @@ struct VoronoiConfig {
 
 struct Config {
     private:
-    YAML::Node conf;
+        YAML::Node conf;
 
     public:
-    void Load(const std::string& path);
+        void Load(const std::string& path);
 
-    size_t Seed() const noexcept;
-    size_t Points() const noexcept;
-    float Fixedtime() const noexcept;
-    std::string Type() const noexcept;
+        size_t Seed() const noexcept;
+        size_t Points() const noexcept;
+        float Fixedtime() const noexcept;
+        std::string Type() const noexcept;
 
-    SpiralConfig Spiral() const noexcept;
-    ClusterConfig Cluster() const noexcept;
-    UniformConfig Uniform() const noexcept;
-    VoronoiConfig Voronoi() const noexcept;
+        SpiralConfig Spiral() const noexcept;
+        ClusterConfig Cluster() const noexcept;
+        UniformConfig Uniform() const noexcept;
+        VoronoiConfig Voronoi() const noexcept;
 };

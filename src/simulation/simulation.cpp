@@ -1,8 +1,8 @@
 /*
 Author: Joey Soroka
-Updated: 2/23/26
+Updated: 10/28/26
 Purpose: Implements basic member functions for the simulation class
-Comments: Currently contains the update_gpu method implementation, which doesn't do anything
+Comments:
 */
 
 #include "simulation.hpp"
@@ -50,8 +50,8 @@ void simulation::init_spiral(const SpiralConfig& conf, size_t seed) noexcept {
         for (size_t s = 0; s < segments && b_idx < data_.bodies(); s++) {
             float theta = TAU * s / (float)segments;
 
-            float x = rx + cosf(theta);
-            float y = ry + sinf(theta);
+            float x = rx * cosf(theta);
+            float y = ry * sinf(theta);
 
             float rot_x = x * cosf(rot) - y * sinf(rot);
             float rot_y = x * sinf(rot) + y * cosf(rot);
@@ -77,19 +77,6 @@ void simulation::init_spiral(const SpiralConfig& conf, size_t seed) noexcept {
         rot += conf.rot_delta;
         inc += conf.inc_delta;
     }
-
-    // sort based on distance
-    data_.sort();
-
-    // scale velocites
-    for (size_t i = 0; i < data_.bodies(); i++) {
-        float x = data_.posx()[i];
-        float y = data_.posy()[i];
-        float v = std::sqrtf(float(i) / std::sqrt(x*x+y*y));
-
-        data_.velx()[i] *= v;
-        data_.vely()[i] *= v;
-    }
 }
 
 void simulation::init_uniform(const UniformConfig& conf, size_t seed) noexcept {
@@ -104,7 +91,7 @@ void simulation::init_uniform(const UniformConfig& conf, size_t seed) noexcept {
     data_.posy()[0] = 0.0f;
     data_.velx()[0] = 0.0f;
     data_.vely()[0] = 0.0f;
-    data_.mass()[0] = 1e5f;
+    data_.mass()[0] = data_.bodies();
 
     for (size_t i = 1; i < data_.bodies(); i++) {
         float a = angle(gen) * TAU;
@@ -122,20 +109,6 @@ void simulation::init_uniform(const UniformConfig& conf, size_t seed) noexcept {
         data_.velx()[i] = sina * vel;
         data_.vely()[i] = -cosa * vel;
         data_.mass()[i] = 0.1f;
-    }
-
-    // sort based on distance
-    data_.sort();
-
-    // scale velocites
-    #pragma omp parallel for simd schedule(static)
-    for (size_t i = 0; i < data_.bodies(); i++) {
-        float x = data_.posx()[i];
-        float y = data_.posy()[i];
-        float v = sqrtf(float(i) / sqrtf(1e-12f+x*x+y*y));
-
-        data_.velx()[i] *= v;
-        data_.vely()[i] *= v;
     }
 }
 
@@ -213,19 +186,6 @@ void simulation::init_voronoi(const VoronoiConfig& conf, size_t seed) noexcept {
         data_.velx()[i] = sina;
         data_.vely()[i] = -cosa;
         data_.mass()[i] = 1.0f;
-    }
-
-    // sort based on distance
-    data_.sort();
-
-    // scale velocites
-    for (size_t i = 0; i < data_.bodies(); i++) {
-        float x = data_.posx()[i];
-        float y = data_.posy()[i];
-        float v = std::sqrtf(float(i) / (1e-12f + std::sqrt(x*x+y*y)));
-
-        data_.velx()[i] *= v;
-        data_.vely()[i] *= v;
     }
 }
 

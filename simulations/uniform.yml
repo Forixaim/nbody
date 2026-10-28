@@ -1,4 +1,4 @@
 type: uniform
 points: 20000
 seed: 1234567890
-fixedtime: 0.001
+fixedtime: 0.01
