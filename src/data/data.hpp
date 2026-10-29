@@ -23,6 +23,17 @@ struct data {
     matrix accx_;
     matrix accy_;
 
+    static float* grow(float* old, size_t old_n, const float* add, size_t add_n) {
+        const size_t new_n = old_n + add_n;
+        float* tmp = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_n * sizeof(float)));
+
+        if (old_n) std::memcpy(tmp, old, old_n * sizeof(float));
+        if (add_n) std::memcpy(tmp + old_n, add, add_n * sizeof(float));
+
+        free(old);
+        return tmp;
+    }
+
     public:
 
     // default constructor
@@ -182,42 +193,17 @@ struct data {
 
     // appends an existing data object to itself
     inline void append(data& other) {
-        const size_t n = bodies_*other.bodies_;
-        const size_t old_bytes = bodies_*sizeof(float);
-        const size_t other_bytes = bodies_*sizeof(float);
-        const size_t new_bytes = old_bytes + other_bytes;
+        const size_t old_n = this->bodies_;
+        const size_t add_n = other.bodies_;
 
-        float* tmp_posx_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_bytes));
-        float* tmp_posy_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_bytes));
-        float* tmp_velx_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_bytes));
-        float* tmp_vely_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_bytes));
-        float* tmp_mass_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_bytes));
+        this->posx_ = grow(posx_, old_n, other.posx_, add_n);
+        this->posy_ = grow(posy_, old_n, other.posy_, add_n);
+        this->velx_ = grow(velx_, old_n, other.velx_, add_n);
+        this->vely_ = grow(vely_, old_n, other.vely_, add_n);
+        this->mass_ = grow(mass_, old_n, other.mass_, add_n);
 
-        std::memcpy(tmp_posx_, posx_, old_bytes);
-        free(posx_);
-
-        std::memcpy(tmp_posy_, posy_, old_bytes);
-        free(posy_);
-
-        std::memcpy(tmp_velx_, velx_, old_bytes);
-        free(velx_);
-
-        std::memcpy(tmp_vely_, vely_, old_bytes);
-        free(vely_);
-
-        std::memcpy(tmp_mass_, mass_, old_bytes);
-        free(mass_);
-
-        std::memcpy(&tmp_posx_[old_bytes], other.posx_, other_bytes);
-        std::memcpy(&tmp_posy_[old_bytes], other.posy_, other_bytes);
-        std::memcpy(&tmp_velx_[old_bytes], other.velx_, other_bytes);
-        std::memcpy(&tmp_vely_[old_bytes], other.vely_, other_bytes);
-        std::memcpy(&tmp_mass_[old_bytes], other.mass_, other_bytes);
-
-        posx_ = tmp_posx_;
-        posy_ = tmp_posy_;
-        velx_ = tmp_velx_;
-        vely_ = tmp_vely_;
-        mass_ = tmp_mass_;
+        this->bodies_ = old_n + add_n;
+        this->accx_ = matrix(omp_get_max_threads(), this->bodies_);
+        this->accy_ = matrix(omp_get_max_threads(), this->bodies_);
     }
 };

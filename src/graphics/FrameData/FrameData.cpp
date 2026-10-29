@@ -1,7 +1,8 @@
 #include "FrameData.hpp"
 
 void FrameData::init(const data& d, const LogicalDevice& ld, const PhysicalDevice& pd) {
-    vk::DeviceSize size = d.bodies() * sizeof(float);
+    this->count = d.bodies();
+    vk::DeviceSize size = this->count * sizeof(float);
 
     constexpr const vk::BufferUsageFlags usage = vk::BufferUsageFlagBits::eStorageBuffer;
     constexpr const vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
