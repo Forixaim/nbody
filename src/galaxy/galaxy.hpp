@@ -1,7 +1,12 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <unordered_map>
+#include <any>
+#include <random>
 #include <yaml-cpp/yaml.h>
+
+#include "../data/data.hpp"
 
 struct Galaxy {
     public:
@@ -15,7 +20,7 @@ struct Galaxy {
         }
 
         /// @brief Creates a new galaxy based on the previously loaded config, this is a factory function and each call is independent of the last, (internal rng state updates between calls)
-        void New() const;
+        data New() const;
 
         void Load(const YAML::Node conf);
 
@@ -26,13 +31,23 @@ struct Galaxy {
         std::string GalaxyString() const noexcept;
 
     private:
+        enum class Options {
+            UN_INNER_RADIUS,
+            UN_OUTER_RADIUS
+        };
+
         Type type;
         size_t points;
         uint64_t seed;
 
-        float xPos;
-        float yPos;
+        float x_pos;
+        float y_pos;
 
-        float xVel;
-        float yVel;
+        float x_vel;
+        float y_vel;
+
+        float center_mass;
+
+        std::unordered_map<Options, std::any> conf;
+        mutable std::default_random_engine gen;
 };

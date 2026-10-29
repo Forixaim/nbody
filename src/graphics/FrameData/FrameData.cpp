@@ -1,7 +1,6 @@
 #include "FrameData.hpp"
 
 void FrameData::init(const data& d, const LogicalDevice& ld, const PhysicalDevice& pd) {
-    count = d.bodies();
     vk::DeviceSize size = d.bodies() * sizeof(float);
 
     constexpr const vk::BufferUsageFlags usage = vk::BufferUsageFlagBits::eStorageBuffer;
@@ -37,7 +36,7 @@ vk::DescriptorBufferInfo FrameData::rInfo() const {
 
 uint32_t FrameData::findMemType(const PhysicalDevice& pd, uint32_t f, vk::MemoryPropertyFlags p) {
     auto memP = pd.Device().getMemoryProperties();
-    
+
     for (uint32_t i = 0; i < memP.memoryTypeCount; i++) {
         if ((f & (1 << i)) && (memP.memoryTypes[i].propertyFlags & p) == p) {
             return i;
@@ -55,7 +54,7 @@ void FrameData::createBuffer(const LogicalDevice& ld, const PhysicalDevice& pd, 
     };
 
     buffer = vk::raii::Buffer(ld, bufferInfo);
-    
+
     auto memRequirements = buffer.getMemoryRequirements();
     vk::MemoryAllocateInfo allocInfo {
         .allocationSize = memRequirements.size,

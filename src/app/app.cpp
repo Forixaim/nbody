@@ -28,7 +28,7 @@ int app::main_loop(const cliargs& f) {
 
     auto frame_start = high_resolution_clock::now();
     auto last_print = high_resolution_clock::now();
-    auto fixedtime = f.config.Fixedtime();
+    auto fixedtime = f.config.FixedTime();
 
     while (!ren.should_close()) {
         count++;

@@ -180,45 +180,44 @@ struct data {
         }
     }
 
-    inline void zcurve() noexcept {
-        std::vector<std::pair<uint64_t, size_t>> values(bodies_);
+    // appends an existing data object to itself
+    inline void append(data& other) {
+        const size_t n = bodies_*other.bodies_;
+        const size_t old_bytes = bodies_*sizeof(float);
+        const size_t other_bytes = bodies_*sizeof(float);
+        const size_t new_bytes = old_bytes + other_bytes;
 
-        float *minx, *maxx;
-        float *miny, *maxy;
+        float* tmp_posx_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_bytes));
+        float* tmp_posy_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_bytes));
+        float* tmp_velx_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_bytes));
+        float* tmp_vely_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_bytes));
+        float* tmp_mass_ = (float*)aligned_alloc(MEM_ALIGNMENT, util::aligned_size(new_bytes));
 
-        std::tie(minx, maxx) = std::minmax_element(posx_, posx_+bodies_);
-        std::tie(miny, maxy) = std::minmax_element(posy_, posy_+bodies_);
+        std::memcpy(tmp_posx_, posx_, old_bytes);
+        free(posx_);
 
-        float rx = (*maxx > *minx) ? (*maxx - *minx) : 1.0f;
-        float ry = (*maxy > *miny) ? (*maxy - *miny) : 1.0f;
+        std::memcpy(tmp_posy_, posy_, old_bytes);
+        free(posy_);
 
-        #pragma omp parallel for simd schedule(static)
-        for (size_t i = 0; i < bodies_; i++) {
-            // get normalized x, y values
-            uint32_t x = (uint32_t)std::min((double)(posx_[i] - *minx) / rx * 0x100000000, (double)0xFFFFFFFFu);
-            uint32_t y = (uint32_t)std::min((double)(posy_[i] - *miny) / ry * 0x100000000, (double)0xFFFFFFFFu);
-            uint64_t code = _pdep_u64((uint64_t)x, 0x5555555555555555ULL) | _pdep_u64((uint64_t)y, 0xAAAAAAAAAAAAAAAAULL);
+        std::memcpy(tmp_velx_, velx_, old_bytes);
+        free(velx_);
 
-            values[i] = { code, i };
-        }
+        std::memcpy(tmp_vely_, vely_, old_bytes);
+        free(vely_);
 
-        std::sort(values.begin(), values.end());
+        std::memcpy(tmp_mass_, mass_, old_bytes);
+        free(mass_);
 
-        for (size_t i = 0; i < bodies_-1; i++) {
-            size_t cur = i;
-            size_t next = values[cur].second;
+        std::memcpy(&tmp_posx_[old_bytes], other.posx_, other_bytes);
+        std::memcpy(&tmp_posy_[old_bytes], other.posy_, other_bytes);
+        std::memcpy(&tmp_velx_[old_bytes], other.velx_, other_bytes);
+        std::memcpy(&tmp_vely_[old_bytes], other.vely_, other_bytes);
+        std::memcpy(&tmp_mass_[old_bytes], other.mass_, other_bytes);
 
-            while (next != i) {
-                std::swap(posx_[cur], posx_[next]);
-                std::swap(posy_[cur], posy_[next]);
-                std::swap(velx_[cur], velx_[next]);
-                std::swap(vely_[cur], vely_[next]);
-                std::swap(mass_[cur], mass_[next]);
-                values[cur].second = cur;
-                cur = next;
-                next = values[cur].second;
-            }
-            values[cur].second = cur;
-        }
+        posx_ = tmp_posx_;
+        posy_ = tmp_posy_;
+        velx_ = tmp_velx_;
+        vely_ = tmp_vely_;
+        mass_ = tmp_mass_;
     }
 };

@@ -9,7 +9,6 @@
 
 struct simulation {
     public:
-    enum init { CLUSTER, SPIRAL };
 
     // default constructor
     simulation() :
@@ -27,35 +26,17 @@ struct simulation {
         update(other.update) {}
 
     // custom constructor
-    simulation(const cliargs& f) :
-        data_(f.config.Points(), f.cpu) {
-            if (f.config.Type() == "cluster") {
-                init_cluster(f.config.Cluster(), f.config.Seed());
-
-            } else if (f.config.Type() == "spiral") {
-                init_spiral(f.config.Spiral(), f.config.Seed());
-
-            } else if (f.config.Type() == "uniform") {
-                init_uniform(f.config.Uniform(), f.config.Seed());
-
-            } else if (f.config.Type() == "voronoi") {
-                init_voronoi(f.config.Voronoi(), f.config.Seed());
-
-            } else {
-                throw std::runtime_error("invalid initilization");
-            }
-
-            if (f.cpu) {
-                update = &simulation::update_cpu;
-            } else {
-                update = &simulation::update_gpu;
-                throw std::runtime_error("not implemented");
-                // TODO : Copy initial values into gpu buffers
-            }
+    simulation(const cliargs& f) : data_(f.config.New()) {
+        if (f.cpu) {
+            update = &simulation::update_cpu;
+        } else {
+            update = &simulation::update_gpu;
+            throw std::runtime_error("not implemented");
         }
+    }
 
     // deconstructor
-    ~simulation() {}
+    //~simulation() {}
 
     // move operator
     simulation& operator = (simulation&& other) noexcept {
@@ -92,9 +73,4 @@ struct simulation {
     void sum_acc() noexcept;
 
     std::chrono::nanoseconds update_gpu(const float ft) noexcept;
-
-    void init_cluster(const ClusterConfig& conf, size_t seed) noexcept;
-    void init_spiral(const SpiralConfig& conf, size_t seed) noexcept;
-    void init_uniform(const UniformConfig& conf, size_t seed) noexcept;
-    void init_voronoi(const VoronoiConfig& conf, size_t seed) noexcept;
 }; // struct simulation

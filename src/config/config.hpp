@@ -1,42 +1,9 @@
 #pragma once
 #include <cstddef>
 #include <string>
-
 #include <yaml-cpp/yaml.h>
 
-struct SpiralConfig {
-    float rx;
-    float rx_scale;
-    float ry;
-    float rot_start;
-    float rot_delta;
-    float inc_start;
-    float inc_delta;
-    float pos_mean;
-    float pos_std;
-    float mass_mean;
-    float mass_std;
-    size_t ellipses;
-    size_t segments;
-};
-
-struct ClusterConfig {
-
-};
-
-struct UniformConfig {
-    float pos_mean;
-    float pos_std;
-    float z_scale;
-
-    float inner_radius;
-    float outer_radius;
-};
-
-struct VoronoiConfig {
-
-};
-
+#include "../data/data.hpp"
 
 struct Config {
     private:
@@ -44,14 +11,7 @@ struct Config {
 
     public:
         void Load(const std::string& path);
+        data New() const;
 
-        size_t Seed() const noexcept;
-        size_t Points() const noexcept;
-        float Fixedtime() const noexcept;
-        std::string Type() const noexcept;
-
-        SpiralConfig Spiral() const noexcept;
-        ClusterConfig Cluster() const noexcept;
-        UniformConfig Uniform() const noexcept;
-        VoronoiConfig Voronoi() const noexcept;
+        float FixedTime() const;
 };
